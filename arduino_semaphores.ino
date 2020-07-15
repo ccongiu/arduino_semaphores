@@ -1,4 +1,3 @@
-#include <time.h>
 
 #define pirA 2 // crossroad A
 #define redA 7
@@ -47,7 +46,6 @@ void setup() {
  pinMode(yellowPed, OUTPUT);
  pinMode(greenPed, OUTPUT);
  pinMode(buttonPed, INPUT);
-
  digitalWrite(redPed, on);
  digitalWrite(yellowPed, off);
  digitalWrite(greenPed, off);
@@ -86,9 +84,11 @@ Semaphore *semB = initSem(redB, yellowB, greenB);
 // Semaphore *semC = initSem(redC, yellowC, greenC); etc...
 // Semaphore *semPed = initSem(redPed, yellowPed, greenPed);
 
+unsigned long start_timeA=0;
+unsigned long start_timeB=0;
+
 void loop() {
   /* PEDESTRIANS
-
   // state update for semPed: this one is a little different
   if (digitalRead(buttonPed) == HIGH or blynkButton()) {
     semPed->current = true;
@@ -98,10 +98,12 @@ void loop() {
   // state update for semA
   if (digitalRead(pirA) == HIGH) {
     semA->current = not(semA->current);
+    start_timeA=millis();
   }
   // state update for semB
   if (digitalRead(pirB) == HIGH) {
     semB->current = not(semB->current);
+    start_timeB=millis();
   }
   // state update for semC etc...
 
@@ -122,9 +124,10 @@ void setOffSem(Semaphore *sem){
     digitalWrite(sem->green, off);
     
     if (sem->previous) { // if the semaphore was previously green, I must switch on the yellow light 
-      digitalWrite(sem->yellow, on);
       delay(WAIT);
-    }
+      digitalWrite(sem->yellow, on);
+      
+          }
     
     digitalWrite(sem->yellow, off);
     digitalWrite(sem->red, on);
@@ -133,9 +136,7 @@ void setOffSem(Semaphore *sem){
 
 
 void alternateSem(Semaphore *semA, Semaphore *semB){ // Semaphore *semC, etc...
-   time_t start_time = time();
-   time_t xsem_time = -1;
-   /* if (semPed->current) {  // this semaphore has priority and will always stay 5 seconds on
+    /* if (semPed->current) {  // this semaphore has priority and will always stay 5 seconds on
       setOffSem(semA); setOffSem(semB); // and all of the others 
       setOnSem(semPed);
       delay(THRESHOLD);
@@ -143,24 +144,25 @@ void alternateSem(Semaphore *semA, Semaphore *semB){ // Semaphore *semC, etc...
       semPed->current = false;
       return;
     } else */ 
-    if (xsem_time - start_time < THRESHOLD and semA->current){
+    unsigned long current_time=millis();
+    
+    if (current_time - start_timeA < THRESHOLD and semA->current){
       setOffSem(semB); // and all of the others
       setOnSem(semA);
-      // semA->elapsedtime++;
-      xsem_time = time();
+      //semA->elapsedtime++;
       return;
-    } else if (xsem_time - start_time < THRESHOLD and semB->current) {
+    } else if (current_time - start_timeB < THRESHOLD and semB->current) {
       setOffSem(semA); // and all of the others
       setOnSem(semB);
-      // semB->elapsedtime++;
-      xsem_time = time();
+      //semB->elapsedtime++;
       return;
     } /* else if (semC->elapsedtime < THRESHOLD and semC->current) {
       ...
     } etc... */
     else {
       setOffSem(semA); setOffSem(semB); // turn off all semaphores
-      start_time = time();
+      //semA->elapsedtime = 0;
+      //semB->elapsedtime = 0;
       // semC->elapsedtime = 0; etc...
       return;
     }
@@ -174,7 +176,7 @@ Semaphore *initSem(int red, int yellow, int green){
     newSem->green = green;
     newSem->current = false;
     newSem->previous = false;
-    newSem->elapsedtime = 0;
+    // newSem->elapsedtime = 0;
     
     return newSem;
 };
