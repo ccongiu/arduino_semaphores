@@ -1,3 +1,5 @@
+#include <time.h>
+
 #define pirA 2 // crossroad A
 #define redA 7
 #define yellowA 8
@@ -131,7 +133,9 @@ void setOffSem(Semaphore *sem){
 
 
 void alternateSem(Semaphore *semA, Semaphore *semB){ // Semaphore *semC, etc...
-    /* if (semPed->current) {  // this semaphore has priority and will always stay 5 seconds on
+   time_t start_time = time();
+   time_t xsem_time = -1;
+   /* if (semPed->current) {  // this semaphore has priority and will always stay 5 seconds on
       setOffSem(semA); setOffSem(semB); // and all of the others 
       setOnSem(semPed);
       delay(THRESHOLD);
@@ -139,15 +143,17 @@ void alternateSem(Semaphore *semA, Semaphore *semB){ // Semaphore *semC, etc...
       semPed->current = false;
       return;
     } else */ 
-    if (semA->elapsedtime < THRESHOLD and semA->current){
+    if (xsem_time - start_time < THRESHOLD and semA->current){
       setOffSem(semB); // and all of the others
       setOnSem(semA);
-      semA->elapsedtime++;
+      // semA->elapsedtime++;
+      xsem_time = time();
       return;
-    } else if (semB->elapsedtime < THRESHOLD and semB->current) {
+    } else if (xsem_time - start_time < THRESHOLD and semB->current) {
       setOffSem(semA); // and all of the others
       setOnSem(semB);
-      semB->elapsedtime++;
+      // semB->elapsedtime++;
+      xsem_time = time();
       return;
     } /* else if (semC->elapsedtime < THRESHOLD and semC->current) {
       ...
