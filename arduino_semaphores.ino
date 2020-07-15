@@ -160,8 +160,7 @@ void alternateSem(Semaphore *semA, Semaphore *semB){ // Semaphore *semC, etc...
     } etc... */
     else {
       setOffSem(semA); setOffSem(semB); // turn off all semaphores
-      semA->elapsedtime = 0;
-      semB->elapsedtime = 0;
+      start_time = time();
       // semC->elapsedtime = 0; etc...
       return;
     }
